@@ -1,0 +1,5 @@
+# Локальный профиль: секрет по умолчанию только для разработки.
+# В prod обязательно задать AUTH_JWT_SECRET (минимум 32 символа).
+auth:
+  jwt:
+    secret: ${AUTH_JWT_SECRET:local-dev-secret-at-least-32-bytes-long-for-hs256}

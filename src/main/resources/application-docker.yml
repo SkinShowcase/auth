@@ -1,0 +1,12 @@
+# Профиль docker: порт 8080 (для healthcheck) и PostgreSQL.
+# Отдельная таблица истории Flyway — одна БД skins для auth, items, messaging, trades.
+server:
+  port: 8080
+
+spring:
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: flyway_auth_schema_history

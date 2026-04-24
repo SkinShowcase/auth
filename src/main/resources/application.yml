@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: auth
+  flyway:
+    enabled: false
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:authdb}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.h2.Driver}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+
+server:
+  port: 8081
+
+# Steam OpenID: realm и return_to — публичный URL (для фронта через API Gateway, по умолчанию :8080).
+# Если запускаете только auth на :8081 без gateway — задайте AUTH_STEAM_REALM / AUTH_STEAM_RETURN_TO на :8081.
+auth:
+  steam:
+    realm: ${AUTH_STEAM_REALM:http://localhost:8080}
+    return-to: ${AUTH_STEAM_RETURN_TO:http://localhost:8080/auth/steam/callback}
+    open-id-ns: ${AUTH_STEAM_OPENID_NS:http://specs.openid.net/auth/2.0}
+    identifier-select: ${AUTH_STEAM_IDENTIFIER_SELECT:http://specs.openid.net/auth/2.0/identifier_select}
+    open-id-endpoint: ${AUTH_STEAM_OPENID_ENDPOINT:https://steamcommunity.com/openid/login}
+  jwt:
+    secret: ${AUTH_JWT_SECRET:}
+    expiration-ms: ${AUTH_JWT_EXPIRATION_MS:86400000}
+  frontend:
+    redirect-url: ${AUTH_FRONTEND_REDIRECT_URL:http://localhost:3000}
+  steam-gateway:
+    base-url: ${AUTH_STEAM_GATEWAY_BASE_URL:http://localhost:8081}
+  public-api:
+    # Базовый URL для клиентов (обычно gateway), для absolute URL пресетных аватарок в /auth/me
+    base-url: ${AUTH_PUBLIC_API_BASE_URL:http://localhost:8080}
+  internal:
+    # Ключ для /auth/internal/** (trades → приватность витрины). Пусто — без проверки (только dev). В prod задать AUTH_INTERNAL_SERVICE_KEY.
+    service-key: ${AUTH_INTERNAL_SERVICE_KEY:}
+
+# Админ-панель: GET /auth/admin/reports, block/unblock. Переопределение: env ADMIN_API_KEY.
+admin:
+  api-key: "${ADMIN_API_KEY:change-me-admin-api-key}"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus, metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.skinsshowcase.auth: DEBUG
+    org.springframework.web: INFO
