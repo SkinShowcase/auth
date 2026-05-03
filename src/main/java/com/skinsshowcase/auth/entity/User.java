@@ -15,9 +15,18 @@ import java.util.Objects;
 @Table(name = "users")
 public class User {
 
+    /**
+     * Внутренний идентификатор: SHA-256(hex) от SteamID64.
+     */
     @Id
     @Column(name = "steam_id", length = 64, nullable = false, unique = true)
     private String steamId;
+
+    /**
+     * Публичный SteamID64 (17 цифр) для ответов API и резолва по display name.
+     */
+    @Column(name = "steam_id64", length = 17, unique = true)
+    private String steamId64;
 
     @Column(name = "private_profile", nullable = false)
     private boolean privateProfile = false;
@@ -58,6 +67,14 @@ public class User {
 
     public String getSteamId() {
         return steamId;
+    }
+
+    public String getSteamId64() {
+        return steamId64;
+    }
+
+    public void setSteamId64(String steamId64) {
+        this.steamId64 = steamId64;
     }
 
     public boolean isPrivateProfile() {

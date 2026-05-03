@@ -74,10 +74,13 @@ public class UserService {
         if (!sameSteamId(viewerSteamId, user) && user.isPrivateProfile()) {
             return Optional.empty();
         }
-        if (!matchesSteamIdFormat(username)) {
-            return Optional.empty();
+        if (matchesSteamIdFormat(username)) {
+            return Optional.of(username.trim());
         }
-        return Optional.of(username.trim());
+        if (user.getSteamId64() != null) {
+            return Optional.of(user.getSteamId64());
+        }
+        return Optional.empty();
     }
 
     /**
@@ -167,6 +170,7 @@ public class UserService {
             return userRepository.save(u);
         }
         var user = new User(hashSteamId(steamId));
+        user.setSteamId64(steamId);
         assignUniqueDisplayName(user);
         authMetrics.recordUserEnsure("created");
         applyUserHashes(user);

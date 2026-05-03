@@ -1,9 +1,9 @@
 package com.skinsshowcase.auth.controller;
 
 import com.skinsshowcase.auth.client.SteamGatewayProfileClient;
-import com.skinsshowcase.auth.entity.User;
 import com.skinsshowcase.auth.repository.UserRepository;
 import com.skinsshowcase.auth.service.JwtService;
+import com.skinsshowcase.auth.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,6 +36,9 @@ class AuthControllerTest {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    UserService userService;
+
     @MockBean
     SteamGatewayProfileClient steamGatewayProfileClient;
 
@@ -57,9 +60,8 @@ class AuthControllerTest {
     @Test
     void session_withBlockedUser_returns403() throws Exception {
         var steamId = "76561198000000003";
-        var user = new User(steamId);
-        user.setBlocked(true);
-        userRepository.save(user);
+        userService.getOrCreate(steamId);
+        userService.setUserBlocked(steamId, true);
         var token = jwtService.createToken(steamId);
         mockMvc.perform(get("/auth/session")
                         .header("Authorization", "Bearer " + token))
@@ -126,23 +128,22 @@ class AuthControllerTest {
     @Test
     void getOtherUserTradeLink_public_returns200() throws Exception {
         var targetId = "76561198000000020";
-        var target = new User(targetId);
-        target.setSteamTradeLink("https://steamcommunity.com/tradeoffer/new/?partner=1&token=xx");
-        userRepository.save(target);
+        userService.getOrCreate(targetId);
+        var url = "https://steamcommunity.com/tradeoffer/new/?partner=1&token=xx";
+        userService.updateSteamTradeLink(targetId, url);
         var viewerToken = jwtService.createToken("76561198000000021");
         mockMvc.perform(get("/auth/users/" + targetId + "/trade-link")
                         .header("Authorization", "Bearer " + viewerToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tradeUrl").value(target.getSteamTradeLink()));
+                .andExpect(jsonPath("$.tradeUrl").value(url));
     }
 
     @Test
     void getOtherUserTradeLink_private_returns404() throws Exception {
         var targetId = "76561198000000022";
-        var target = new User(targetId);
-        target.setPrivateProfile(true);
-        target.setSteamTradeLink("https://steamcommunity.com/tradeoffer/new/?partner=1&token=yy");
-        userRepository.save(target);
+        userService.getOrCreate(targetId);
+        userService.setPrivacy(targetId, true);
+        userService.updateSteamTradeLink(targetId, "https://steamcommunity.com/tradeoffer/new/?partner=1&token=yy");
         var viewerToken = jwtService.createToken("76561198000000023");
         mockMvc.perform(get("/auth/users/" + targetId + "/trade-link")
                         .header("Authorization", "Bearer " + viewerToken))
@@ -203,10 +204,9 @@ class AuthControllerTest {
     @Test
     void getByUsername_whenTargetPrivateAndOtherViewer_returns404() throws Exception {
         var targetId = "76561198000000060";
-        var target = new User(targetId);
-        target.setDisplayName("private_showcase_user");
-        target.setPrivateProfile(true);
-        userRepository.save(target);
+        userService.getOrCreate(targetId);
+        userService.updateDisplayName(targetId, "private_showcase_user");
+        userService.setPrivacy(targetId, true);
         var viewerToken = jwtService.createToken("76561198000000061");
         mockMvc.perform(get("/auth/users/by-username/private_showcase_user")
                         .header("Authorization", "Bearer " + viewerToken))
@@ -216,10 +216,9 @@ class AuthControllerTest {
     @Test
     void getByUsername_whenTargetPrivateAndSelf_returns200() throws Exception {
         var targetId = "76561198000000062";
-        var target = new User(targetId);
-        target.setDisplayName("private_self_lookup");
-        target.setPrivateProfile(true);
-        userRepository.save(target);
+        userService.getOrCreate(targetId);
+        userService.updateDisplayName(targetId, "private_self_lookup");
+        userService.setPrivacy(targetId, true);
         var token = jwtService.createToken(targetId);
         mockMvc.perform(get("/auth/users/by-username/private_self_lookup")
                         .header("Authorization", "Bearer " + token))
@@ -230,10 +229,8 @@ class AuthControllerTest {
     @Test
     void getByUsername_whenPublic_returns200() throws Exception {
         var targetId = "76561198000000063";
-        var target = new User(targetId);
-        target.setDisplayName("public_showcase_user");
-        target.setPrivateProfile(false);
-        userRepository.save(target);
+        userService.getOrCreate(targetId);
+        userService.updateDisplayName(targetId, "public_showcase_user");
         var viewerToken = jwtService.createToken("76561198000000064");
         mockMvc.perform(get("/auth/users/by-username/public_showcase_user")
                         .header("Authorization", "Bearer " + viewerToken))
@@ -245,7 +242,7 @@ class AuthControllerTest {
     void batchPresetAvatarIds_returnsPresetIdForPresetUser() throws Exception {
         var viewerSteamId = "76561198000000050";
         var otherSteamId = "76561198000000051";
-        var other = new User(otherSteamId);
+        var other = userService.getOrCreate(otherSteamId);
         other.setSelectedPresetAvatarId(3);
         userRepository.save(other);
         var token = jwtService.createToken(viewerSteamId);
