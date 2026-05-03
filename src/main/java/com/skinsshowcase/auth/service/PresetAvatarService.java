@@ -2,6 +2,7 @@ package com.skinsshowcase.auth.service;
 
 import com.skinsshowcase.auth.config.AuthPublicApiProperties;
 import com.skinsshowcase.auth.dto.PresetAvatarOptionDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PresetAvatarService {
 
     public static final int PRESET_AVATAR_COUNT = 8;
@@ -20,11 +22,6 @@ public class PresetAvatarService {
 
     private final AuthPublicApiProperties publicApiProperties;
     private final ResourceLoader resourceLoader;
-
-    public PresetAvatarService(AuthPublicApiProperties publicApiProperties, ResourceLoader resourceLoader) {
-        this.publicApiProperties = publicApiProperties;
-        this.resourceLoader = resourceLoader;
-    }
 
     public List<PresetAvatarOptionDto> listOptions() {
         var out = new ArrayList<PresetAvatarOptionDto>();

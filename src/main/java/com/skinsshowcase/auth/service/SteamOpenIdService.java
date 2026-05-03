@@ -2,8 +2,7 @@ package com.skinsshowcase.auth.service;
 
 import com.skinsshowcase.auth.config.SteamOpenIdProperties;
 import com.skinsshowcase.auth.exception.SteamAuthException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -18,10 +17,10 @@ import java.util.regex.Pattern;
  * Steam OpenID 2.0: построение URL редиректа и проверка ответа Steam (check_authentication).
  * SteamID никогда не принимается с клиента — только после проверки у Steam.
  */
+@Slf4j
 @Service
 public class SteamOpenIdService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SteamOpenIdService.class);
     private static final String MODE_CHECKID_SETUP = "checkid_setup";
     private static final String MODE_CHECK_AUTHENTICATION = "check_authentication";
     private static final String NS = "openid.ns";
@@ -75,13 +74,13 @@ public class SteamOpenIdService {
         var formData = buildCheckAuthenticationForm(callbackParams);
         var responseBody = postCheckAuthentication(formData);
         if (!isValidResponse(responseBody)) {
-            logger.warn("Steam check_authentication failed: response does not contain is_valid:true");
+            log.warn("Steam check_authentication failed: response does not contain is_valid:true");
             throw new SteamAuthException("Steam authentication validation failed");
         }
         var claimedId = callbackParams.get(CLAIMED_ID);
         var steamId = extractSteamIdFromClaimedId(claimedId);
         if (steamId == null) {
-            logger.warn("Could not extract SteamID from claimed_id: {}", claimedId);
+            log.warn("Could not extract SteamID from claimed_id");
             throw new SteamAuthException("Invalid Steam claimed_id");
         }
         return steamId;
@@ -107,7 +106,7 @@ public class SteamOpenIdService {
                     .bodyToMono(String.class)
                     .block();
         } catch (WebClientResponseException e) {
-            logger.warn("Steam check_authentication HTTP error: {} {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.warn("Steam check_authentication HTTP error: status={}", e.getStatusCode());
             throw new SteamAuthException("Steam authentication request failed", e);
         }
     }

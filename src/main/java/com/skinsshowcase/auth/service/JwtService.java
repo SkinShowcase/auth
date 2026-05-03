@@ -5,8 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -17,10 +16,10 @@ import java.util.Date;
  * Создание и валидация JWT с subject = SteamID64.
  * Секрет из конфига (env), не хардкодится.
  */
+@Slf4j
 @Service
 public class JwtService {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
     private static final int MIN_SECRET_BYTES_HS256 = 32;
 
     private final JwtProperties properties;
@@ -71,7 +70,7 @@ public class JwtService {
             Jwts.parser().verifyWith(signingKey).build().parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
-            log.debug("JWT validation failed: {}", e.getMessage());
+            log.debug("JWT validation failed");
             return false;
         }
     }

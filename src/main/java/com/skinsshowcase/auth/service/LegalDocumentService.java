@@ -4,6 +4,7 @@ import com.skinsshowcase.auth.dto.LegalDocumentListItemDto;
 import com.skinsshowcase.auth.dto.LegalDocumentResponseDto;
 import com.skinsshowcase.auth.entity.LegalDocument;
 import com.skinsshowcase.auth.repository.LegalDocumentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,13 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class LegalDocumentService {
 
     private final LegalDocumentRepository legalDocumentRepository;
-
-    public LegalDocumentService(LegalDocumentRepository legalDocumentRepository) {
-        this.legalDocumentRepository = legalDocumentRepository;
-    }
 
     @Transactional(readOnly = true)
     public List<LegalDocumentListItemDto> listLatestMeta() {
