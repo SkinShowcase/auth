@@ -10,6 +10,7 @@ import com.skinsshowcase.auth.exception.ConflictException;
 import com.skinsshowcase.auth.metrics.AuthMetrics;
 import com.skinsshowcase.auth.repository.UserReportRepository;
 import com.skinsshowcase.auth.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private static final Pattern STEAM_ID_PATTERN = Pattern.compile("^[0-9]{17}$");
@@ -46,20 +48,6 @@ public class UserService {
     private final AuthMetrics authMetrics;
     private final UserDataHashingService userDataHashingService;
     private final SecureRandom secureRandom = new SecureRandom();
-
-    public UserService(UserRepository userRepository,
-                       UserReportRepository userReportRepository,
-                       SteamGatewayProfileClient steamGatewayProfileClient,
-                       PresetAvatarService presetAvatarService,
-                       AuthMetrics authMetrics,
-                       UserDataHashingService userDataHashingService) {
-        this.userRepository = userRepository;
-        this.userReportRepository = userReportRepository;
-        this.steamGatewayProfileClient = steamGatewayProfileClient;
-        this.presetAvatarService = presetAvatarService;
-        this.authMetrics = authMetrics;
-        this.userDataHashingService = userDataHashingService;
-    }
 
     /**
      * Steam ID по имени для просмотра: при приватном профиле чужой пользователь не резолвится (как 404).
