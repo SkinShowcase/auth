@@ -36,7 +36,9 @@ class JwtServiceTest {
         assertThat(service.isValid("not.a.jwt")).isFalse();
 
         var token = service.createToken("76561198000000001");
-        var tampered = token.substring(0, token.length() - 1) + (token.endsWith("a") ? "b" : "a");
+        var parts = token.split("\\.");
+        assertThat(parts).hasSize(3);
+        var tampered = parts[0] + "." + parts[1] + ".not-a-valid-signature";
         assertThat(service.isValid(tampered)).isFalse();
     }
 
